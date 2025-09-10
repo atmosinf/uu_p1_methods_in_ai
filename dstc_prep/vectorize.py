@@ -1,14 +1,21 @@
 
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+def vectorize_fit_transform(vectorizer, x_train, x_test):
+    '''
+    fit vectorizer on train and transform both 
+    '''
+    x_train_transformed = vectorizer.fit_transform(x_train)
+    x_test_transformed = vectorizer.transform(x_test)
 
-def build_vectorizer(kind="bow", min_df=1, ngram_range=(1,1)):
-    """kind='bow' -> CountVectorizer, kind='tfidf' -> TfidfVectorizer"""
-    if kind == "tfidf":
-        return TfidfVectorizer(min_df=min_df, ngram_range=ngram_range)
-    return CountVectorizer(min_df=min_df, ngram_range=ngram_range)
+    return x_train_transformed, x_test_transformed
 
-def vectorize_fit_transform(vectorizer, X_train, X_test):
-    """Fit on train only (to avoid leakage), transform both."""
-    Xtr = vectorizer.fit_transform(X_train)
-    Xte = vectorizer.transform(X_test)
-    return Xtr, Xte, vectorizer
+if __name__ == '__main__':
+    from dataio import load_data_to_df
+    from split import stratified_split
+    from sklearn.feature_extraction.text import CountVectorizer
+
+    df = load_data_to_df('test_data.txt')
+    x_train, x_test, y_train, y_test = stratified_split(df, test_size=0.15)
+    vectorizer = CountVectorizer()
+    x_train_transformed, x_test_transformed = vectorize_fit_transform(vectorizer, x_train, x_test)
+    
+

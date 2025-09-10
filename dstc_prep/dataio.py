@@ -1,27 +1,31 @@
-
 from pathlib import Path
 import pandas as pd
 
-def load_dialog_file(path):
-    """
-    Reads `dialog_act utterance` lines into a DataFrame with columns: label, text.
-    Skips blank/malformed lines.
-    """
+def load_data_to_df(path):
+    '''
+    reads the file with lines in the format 'dialog_act utterance'
+    returns a dataframe with the columns: label, text
+    '''
+
     rows = []
-    with open(path, "r", encoding="utf-8") as f:
-        for raw in f:
-            line = raw.strip()
-            if not line:
+    with open(path, 'r') as f:
+        for line in f:
+            line = line.strip() # strip \n at the end
+
+            if not line: # skip if line if empty
                 continue
-            parts = line.split(maxsplit=1)
-            if len(parts) < 2:
-                # skip malformed lines like a bare label with no text
-                continue
-            label, text = parts[0], parts[1]
-            rows.append((label, text))
-    df = pd.DataFrame(rows, columns=["label", "text"])
+
+            pieces = line.split(maxsplit=1) # get the lines in two pieces, 1st piece being the dialog act and the 2nd being the utterance
+            
+            label, text = pieces[0], pieces[1]
+            rows.append((label,text))
+    
+    # create a dataframe with the appended rows
+    df = pd.DataFrame(rows, columns=['label','text'])
+
     return df
 
 if __name__ == "__main__":
-    df = load_dialog_file("dialog_acts.dat")
+    df = load_data_to_df("dialog_acts.dat")
     print(df.head())
+

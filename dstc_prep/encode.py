@@ -1,9 +1,5 @@
+def encode_labels(encoder, y_train, y_test):
+    y_train_encoded = encoder.fit_transform(y_train)
+    y_test_encoded = encoder.transform(y_test)
 
-from sklearn.preprocessing import LabelEncoder
-
-def encode_labels(y_train, y_test):
-    """Fit label encoder on train, apply to both."""
-    le = LabelEncoder()
-    ytr = le.fit_transform(y_train)
-    yte = le.transform(y_test)
-    return ytr, yte, le
+    return y_train_encoded, y_test_encoded
