@@ -21,25 +21,3 @@ def look_for_multiple_dialog_acts(input_file):
                 print(i+1,line)
     
     print(f'\nthere were {count} instances where the dialog act appeared twice')
-
-
-def remove_duplicate_sentences(input_file, output_file):
-    """
-    Removes duplicate sentences from the input file, writing only the first occurrence
-    of each normalized sentence to the output file.
-    Normalization: strip whitespace, replace tabs with spaces, collapse multiple spaces.
-    Prints the number of duplicates removed.
-    """
-    seen = set()
-    duplicates = 0
-    with open(input_file, 'r') as fin, open(output_file, 'w') as fout:
-        for line in fin:
-            normalized = ' '.join(line.strip().replace('\t', ' ').split())
-            if normalized not in seen:
-                seen.add(normalized)
-                fout.write(line)
-            else:
-                duplicates += 1
-    print(f'Removed {duplicates} duplicate sentences.')
-
-look_for_multiple_dialog_acts(input_file='dialog_acts.dat')
