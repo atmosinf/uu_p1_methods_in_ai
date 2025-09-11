@@ -13,6 +13,7 @@ def summarize_labels(y_train, y_test):
 
     print(f"Train: total={len(y_train)}, unique={len(train_counts)}, counts={train_counts}")
     print(f"Test:  total={len(y_test)}, unique={len(test_counts)}, counts={test_counts}")
+    print('-----#####-----\n')
 
     return train_counts, test_counts
 
@@ -47,7 +48,4 @@ def prepare_dataset(path):
             'encoder': encoder}
 
 if __name__ == '__main__':
-    prepare_dataset('dialog_acts_deduplicated.dat')
-
-    print('a')
-
+    prepare_dataset('datasets/dialog_acts_deduplicated.dat')

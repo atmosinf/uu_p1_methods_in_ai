@@ -26,6 +26,5 @@ def load_data_to_df(path):
     return df
 
 if __name__ == "__main__":
-    df = load_data_to_df("dialog_acts.dat")
+    df = load_data_to_df("datasets/dialog_acts.dat")
     print(df.head())
-

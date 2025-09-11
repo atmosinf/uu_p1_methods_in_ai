@@ -13,5 +13,5 @@ def stratified_split(df, test_size=0.15, seed=11):
 if __name__ == '__main__':
     from dataio import load_data_to_df
 
-    df = load_data_to_df("dialog_acts.dat")
+    df = load_data_to_df("datasets/dialog_acts.dat")
     stratified_split(df, test_size=0.15)

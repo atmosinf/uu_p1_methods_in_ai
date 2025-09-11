@@ -1,8 +1,0 @@
-inform she like cats
-inform she like dogs
-ack cats are not dogs
-ack cats like cats but not dogs
-inform she like cats
-inform she like dogs
-ack cats are not dogs
-ack cats like cats but not dogs

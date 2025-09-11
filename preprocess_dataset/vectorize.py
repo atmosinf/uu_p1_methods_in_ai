@@ -18,4 +18,3 @@ if __name__ == '__main__':
     vectorizer = CountVectorizer()
     x_train_transformed, x_test_transformed = vectorize_fit_transform(vectorizer, x_train, x_test)
     
-
