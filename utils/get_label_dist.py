@@ -63,4 +63,4 @@ def plot_dialog_act_counts(dat_path, save_path=None, title="Dialog act frequency
 
     return dict(items)
 
-plot_dialog_act_counts('dialog_acts_deduplicated.dat')
+plot_dialog_act_counts('datasets/dialog_acts_lower.dat')
