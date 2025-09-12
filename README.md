@@ -7,8 +7,15 @@ Project for dialog act classification with simple data prep utilities and a trai
 - Select model: `python train.py --model decision_tree`
 - Select dataset: `python train.py --data datasets/dialog_acts_lower.dat`
 
+### Save and Infer
+- Save artifacts while training: `python train.py --save-dir artifacts/logreg`
+- Run inference on a single utterance: `python infer.py --model-dir artifacts/logreg --input "book a flight to rome"`
+- Run inference on a file (one utterance per line): `python infer.py --model-dir artifacts/logreg --file my_utterances.txt`
+- Show top-k probabilities: `python infer.py --model-dir artifacts/logreg --file my_utterances.txt --proba --topk 5`
+
 ## Top-Level Files
 - `train.py`: CLI to train a classifier on the dataset. Supports `--model {logistic_regression,decision_tree}` and `--data <path>`. Prints accuracy, classification report, and confusion matrix.
+- `infer.py`: CLI to load saved artifacts (`model.joblib`, `vectorizer.joblib`, `label_encoder.joblib`) and predict labels for inputs.
 - `datasets/`: Folder containing dataset files:
   - `dialog_acts.dat`: Original dataset (label + utterance per line).
   - `dialog_acts_lower.dat`: Lowercased version of the dataset.

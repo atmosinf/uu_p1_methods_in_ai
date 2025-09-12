@@ -1,6 +1,6 @@
 from sklearn.model_selection import train_test_split
 
-def stratified_split(df, test_size=0.15, seed=11):
+def stratified_split(df, test_size=0.15, seed=42):
     '''
     split the dataset in a stratified manner so that train and test sets have the same proportions of labels
     '''

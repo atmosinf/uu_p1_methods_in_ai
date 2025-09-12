@@ -4,6 +4,10 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import pandas as pd
 import argparse
+from pathlib import Path
+import json
+from datetime import datetime
+import joblib
 
 
 def main():
@@ -21,12 +25,18 @@ def main():
         default="datasets/dialog_acts_deduplicated.dat",
         help="Path to dataset file (default: datasets/dialog_acts_deduplicated.dat)",
     )
+    parser.add_argument(
+        "--save-dir",
+        default=None,
+        help="Directory to save trained artifacts (model, vectorizer, encoder). If omitted, nothing is saved.",
+    )
     args = parser.parse_args()
 
     # preprocess dataset and get train/test splits. split is done in a stratified manner
     data = prepare_dataset(args.data)
     x_train, x_test, y_train, y_test = data['x_train'], data['x_test'], data['y_train'], data['y_test']
     label_encoder = data['encoder']
+    vectorizer = data['vectorizer']
 
     # choose model
     if args.model == "logistic_regression":
@@ -48,6 +58,24 @@ def main():
     print("Confusion Matrix (counts)")
     with pd.option_context('display.max_columns', None, 'display.width', 200):
         print(df_cm.to_string())
+
+    # optionally save artifacts
+    if args.save_dir:
+        out_dir = Path(args.save_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        joblib.dump(classifier, out_dir / "model.joblib")
+        joblib.dump(vectorizer, out_dir / "vectorizer.joblib")
+        joblib.dump(label_encoder, out_dir / "label_encoder.joblib")
+
+        meta = {
+            "model_type": args.model,
+            "dataset": args.data,
+            "classes": list(label_encoder.classes_),
+            "saved_at": datetime.utcnow().isoformat() + "Z",
+        }
+        (out_dir / "metadata.json").write_text(json.dumps(meta, indent=2))
+        print(f"\nSaved artifacts to: {out_dir}")
 
 if __name__ == "__main__":
     main()

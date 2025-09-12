@@ -41,11 +41,12 @@ def prepare_dataset(path):
     # get a summary of the train test split and the label distribution
     summarize_labels(y_train, y_test)
 
-    return {'x_train': x_train_transformed, 
+    return {'x_train': x_train_transformed,
             'x_test': x_test_transformed,
             'y_train': y_train_encoded,
             'y_test': y_test_encoded,
-            'encoder': encoder}
+            'encoder': encoder,
+            'vectorizer': vectorizer}
 
 if __name__ == '__main__':
     prepare_dataset('datasets/dialog_acts_deduplicated.dat')
