@@ -7,10 +7,13 @@ from typing import Dict, Optional, List
 PRICERANGE_VALUES = {"cheap", "moderate", "expensive", "dontcare"}
 AREA_VALUES       = {"north", "south", "east", "west", "centre", "dontcare"}
 FOOD_VALUES       = {
-    "italian","british","french","indian","chinese","japanese","thai","korean",
-    "vietnamese","mediterranean","spanish","portuguese","greek","turkish",
-    "american","mexican","european","bistro","gastropub","asian oriental","venetian",
-    "dontcare"  # <-- added here
+    "african","asian oriental","australasian","bistro","british","catalan",
+    "chinese","cuban","european","french","fusion","gastropub","indian",
+    "international","italian","jamaican","japanese","korean","lebanese",
+    "mediterranean","modern european","moroccan","north american","persian",
+    "polynesian","portuguese","romanian","seafood","spanish","steakhouse",
+    "swiss","thai","traditional","turkish","tuscan","vietnamese",
+    "dontcare"  
 }
 
 PRICERANGE_SYNONYMS = {
@@ -118,8 +121,24 @@ def extract_auto(input_or_path: str):
 
 # ======= quick demo =======
 if __name__ == "__main__":
-    samples = [
-        "Looking for a moderately priced place in the south serving dasdff."
+    tests = [   "I'm looking for world food",
+        "I want a restaurant that serves world food",
+        "I want a restaurant serving Swedish food",
+        "I'm looking for a restaurant in the center",
+        "I would like a cheap restaurant in the west part of town",
+        "I'm looking for a moderately priced restaurant in the west part of town",
+        "I'm looking for a restaurant in any area that serves Tuscan food",
+        "Can I have an expensive restaurant",
+        "I'm looking for an expensive restaurant and it should serve international food",
+        "I need a Cuban restaurant that is moderately priced",
+        "I'm looking for a moderately priced restaurant with Catalan food",
+        "What is a cheap restaurant in the south part of town",
+        "What about Chinese food",
+        "I wanna find a cheap restaurant",
+        "I'm looking for Persian food please",
+        "Find a Cuban restaurant in the center"
     ]
-    for s in samples:
-        print(s, "->", extract_keywords(s))
+    for test in tests:
+        print(f"Input: {test}")
+        print(f"Output: {extract_keywords(test)}")
+        print()

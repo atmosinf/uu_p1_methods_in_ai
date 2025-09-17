@@ -3,10 +3,15 @@ import re
 # all possible options from the database
 pricerange_options = {'cheap', 'moderate', 'expensive', 'dontcare'}
 area_options = {'north', 'south', 'east', 'west', 'centre', 'dontcare'}
-food_options = {'italian','british','french','indian','chinese','japanese','thai','korean',
-    'vietnamese','mediterranean','spanish','portuguese','greek','turkish',
-    'american','mexican','european','bistro','gastropub','asian oriental','venetian',
-    'dontcare'}
+food_options = {
+    "african","asian oriental","australasian","bistro","british","catalan",
+    "chinese","cuban","european","french","fusion","gastropub","indian",
+    "international","italian","jamaican","japanese","korean","lebanese",
+    "mediterranean","modern european","moroccan","north american","persian",
+    "polynesian","portuguese","romanian","seafood","spanish","steakhouse",
+    "swiss","thai","traditional","turkish","tuscan","vietnamese",
+    "dontcare"  
+}
 
 # mapping from keywords to possible options
 pricerange_keyword_map = {
@@ -74,7 +79,7 @@ def clean_text(text: str):
 
 def make_regex_patterns(keywords):
     '''
-    instead of using for loops to cycle over each word in the keyword dictionary and try to
+    instead of using for loops to cycle over each word in the keyword dictionary and trying to
     match it with each word in the input, we can use regex patterns to find a match.
     this also prevents issues like finding a match on 'high' instead of 'high end'
     '''
@@ -116,9 +121,9 @@ def extract_keywords(text: str):
               "food": None} # initialize an empty dict
 
     #
-    price_patterns = make_regex_patterns(set(pricerange_keyword_map.keys()))
-    area_patterns = make_regex_patterns(set(area_keyword_map.keys()))
-    food_patterns = make_regex_patterns(set(food_keyword_map.keys()))
+    price_patterns = make_regex_patterns(pricerange_options | set(pricerange_keyword_map.keys()))
+    area_patterns = make_regex_patterns(area_options | set(area_keyword_map.keys()))
+    food_patterns = make_regex_patterns(food_options | set(food_keyword_map.keys()))
 
     # get first match for each category
     price_match = first_match(price_patterns, text)
@@ -129,6 +134,11 @@ def extract_keywords(text: str):
     output["pricerange"] = map_keyword_to_option(price_match, pricerange_keyword_map, pricerange_options)
     output["area"] = map_keyword_to_option(area_match, area_keyword_map, area_options)
     output["food"] = map_keyword_to_option(food_match, food_keyword_map, food_options)
+
+    # if any value is not found in the t
+    for key, value in output.items():
+        if value is None:
+            output[key] = "unknown"
 
     return output
 
