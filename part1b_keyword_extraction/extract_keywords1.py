@@ -26,7 +26,7 @@ pricerange_keyword_map = {
 	"inexpensive": "cheap",
     "pricey": "expensive",
 	"high end": "expensive",
-	"high-end": "expensive",
+	"high-end": "expensive", 
     "any": "dontcare",
 	"any price": "dontcare",
     "dont care": "dontcare",
@@ -67,6 +67,25 @@ food_keyword_map = {
 	"doesn't matter": "dontcare",
 }
 
+# extra indicator terms that signal the user is referring to a slot without
+# providing a concrete value (e.g., "I'd like cuisine")
+pricerange_indicator_terms = {
+    "price", "price range", "pricerange", "cost", "costs", "costly",
+    "expense", "expensive", "cheap", "budget", "affordable",
+    "inexpensive", "how much"
+}
+
+area_indicator_terms = {
+    "area", "part of town", "part of the town", "town", "neighborhood",
+    "neighbourhood", "location", "side of town", "where",
+    "in town", "area of town"
+}
+
+food_indicator_terms = {
+    "food", "cuisine", "type of food", "kind of food", "meal", "dish",
+    "type of cuisine", "serve", "serves", "serving", "served"
+}
+
 def clean_text(text: str):
     '''
     convert to lowercase and remove special characters and extra spaces
@@ -88,6 +107,18 @@ def make_regex_patterns(keywords):
 
     return patterns
 
+# patterns that help us detect whether the user even mentioned a slot
+slot_mention_keyword_map = {
+    "pricerange": pricerange_options | set(pricerange_keyword_map.keys()) | pricerange_indicator_terms,
+    "area": area_options | set(area_keyword_map.keys()) | area_indicator_terms,
+    "food": food_options | set(food_keyword_map.keys()) | food_indicator_terms,
+}
+
+slot_mention_patterns = {
+    slot: make_regex_patterns(keywords)
+    for slot, keywords in slot_mention_keyword_map.items()
+}
+
 def first_match(patterns, text):
     '''
     return the first match found in the text using the list of regex patterns
@@ -97,6 +128,17 @@ def first_match(patterns, text):
             return keyword # return the keyword
 
     return None # if no match is found, return None
+
+def detect_preference_mentions(text: str):
+    '''
+    check if the user has mentioned a preference slot even if we cannot map it to a known value
+    '''
+    cleaned_text = clean_text(text)
+    mentions = {}
+    for slot, patterns in slot_mention_patterns.items():
+        mentions[slot] = bool(first_match(patterns, cleaned_text))
+
+    return mentions
 
 def map_keyword_to_option(keyword, keyword_map, options):
     '''
@@ -115,6 +157,7 @@ def map_keyword_to_option(keyword, keyword_map, options):
         return None
 
 def extract_keywords(text: str):
+    original_text = text
     text = text.lower() # convert input to lowercase
     output = {"pricerange": None,
               "area": None,
@@ -135,16 +178,23 @@ def extract_keywords(text: str):
     output["area"] = map_keyword_to_option(area_match, area_keyword_map, area_options)
     output["food"] = map_keyword_to_option(food_match, food_keyword_map, food_options)
 
-    # if any value is not found in the t
+    mentions = detect_preference_mentions(original_text)
+
+    # if any value is not found in the text and we couldn't recover it
     for key, value in output.items():
         if value is None:
             output[key] = "unknown"
+
+    for key in output:
+        if output[key] == "unknown" and not mentions.get(key, False):
+            output[key] = None
 
     return output
 
 if __name__ == "__main__":
     # some quick tests
-    tests = [   "I'm looking for world food",
+    tests = [   "hi",
+        "I'm looking for world food",
         "I want a restaurant that serves world food",
         "I want a restaurant serving Swedish food",
         "I'm looking for a restaurant in the center",
