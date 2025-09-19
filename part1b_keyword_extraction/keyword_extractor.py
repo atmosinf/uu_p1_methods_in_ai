@@ -1,4 +1,5 @@
 import re
+from Levenshtein import distance as levenshtein_distance
 
 # all possible options from the database
 pricerange_options = {'cheap', 'moderate', 'expensive', 'dontcare'}
@@ -70,9 +71,9 @@ food_keyword_map = {
 # extra indicator terms that signal the user is referring to a slot without
 # providing a concrete value (e.g., "I'd like cuisine")
 pricerange_indicator_terms = {
-    "price", "price range", "pricerange", "cost", "costs", "costly",
-    "expense", "expensive", "cheap", "budget", "affordable",
-    "inexpensive", "how much"
+    "price", "price range", "pricerange", "priced", "prices", "pricing",
+    "cost", "costs", "costly", "expense", "expensive", "cheap",
+    "budget", "affordable", "inexpensive", "how much"
 }
 
 area_indicator_terms = {
@@ -156,6 +157,62 @@ def map_keyword_to_option(keyword, keyword_map, options):
     else:
         return None
 
+def fuzzy_find_keyword(text: str, keyword_map, options, max_distance: int = 3):
+    '''use Levenshtein distance to recover close matches (e.g., "afrcan" -> "african")'''
+    if levenshtein_distance is None:  # bail out when the optional dependency is missing
+        return None
+
+    tokens = clean_text(text).split()  # normalise the user text into tokens
+    if not tokens:  # no tokens means nothing to match against
+        return None
+
+    candidate_strings = options | set(keyword_map.keys())  # include canonical values and synonyms
+    best_value = None  # track the closest concrete value found so far
+    best_distance = max_distance + 1  # store its edit distance for comparisons
+    best_dc_value = None  # stash the best dontcare candidate separately
+    best_dc_distance = max_distance + 1  # distance for that dontcare candidate
+
+    for candidate in candidate_strings:  # iterate over every potential target phrase
+        candidate_clean = clean_text(candidate)  # normalise the candidate for comparison
+        if not candidate_clean:  # skip empty strings after cleaning
+            continue
+
+        mapped_value = map_keyword_to_option(candidate_clean, keyword_map, options)  # resolve synonyms to canonical values
+        if mapped_value is None:  # ignore anything that doesn't map to an allowed option
+            continue
+
+        word_count = max(1, len(candidate_clean.split()))  # match n-gram length to candidate word count
+        segments = [" ".join(tokens[i:i + word_count]) for i in range(len(tokens) - word_count + 1)]  # collect same-length segments from the text
+        if not segments:  # if we lack segments of that size, move on
+            continue
+
+        allowed_distance = max(1, min(max_distance, len(candidate_clean) // 3))  # scale tolerance relative to phrase length
+
+        for seg in segments:  # compare each matching-length segment
+            if not seg or len(seg) < 3:  # avoid extremely short matches that are often noise
+                continue
+
+            distance = levenshtein_distance(seg, candidate_clean)  # compute edit distance to the candidate
+            if distance > allowed_distance:  # discard if outside the tolerated distance
+                continue
+
+            if mapped_value == 'dontcare':  # treat dontcare separately so concrete values can win later
+                if distance < best_dc_distance:
+                    best_dc_distance = distance
+                    best_dc_value = mapped_value
+            else:
+                if distance < best_distance:  # update best concrete match when closer
+                    best_distance = distance
+                    best_value = mapped_value
+
+    if best_value is not None:  # prefer real values when available
+        return best_value
+
+    if best_dc_distance <= max_distance:  # otherwise, return the best dontcare within threshold
+        return best_dc_value
+
+    return None  # nothing fell within the allowed edit distance
+
 def extract_keywords(text: str):
     original_text = text
     text = text.lower() # convert input to lowercase
@@ -180,9 +237,20 @@ def extract_keywords(text: str):
 
     mentions = detect_preference_mentions(original_text)
 
+    fuzzy_price = fuzzy_find_keyword(original_text, pricerange_keyword_map, pricerange_options)
+    fuzzy_area = fuzzy_find_keyword(original_text, area_keyword_map, area_options)
+    fuzzy_food = fuzzy_find_keyword(original_text, food_keyword_map, food_options)
+
+    if output["pricerange"] is None or (output["pricerange"] == "dontcare" and fuzzy_price not in {None, "dontcare"}):
+        output["pricerange"] = fuzzy_price if fuzzy_price is not None else output["pricerange"]
+    if output["area"] is None or (output["area"] == "dontcare" and fuzzy_area not in {None, "dontcare"}):
+        output["area"] = fuzzy_area if fuzzy_area is not None else output["area"]
+    if output["food"] is None or (output["food"] == "dontcare" and fuzzy_food not in {None, "dontcare"}):
+        output["food"] = fuzzy_food if fuzzy_food is not None else output["food"]
+
     # if any value is not found in the text and we couldn't recover it
-    for key, value in output.items():
-        if value is None:
+    for key in list(output.keys()):
+        if output[key] is None:
             output[key] = "unknown"
 
     for key in output:
@@ -209,7 +277,11 @@ if __name__ == "__main__":
         "What about Chinese food",
         "I wanna find a cheap restaurant",
         "I'm looking for Persian food please",
-        "Find a Cuban restaurant in the center"
+        "Find a Cuban restaurant in the center",
+        "Do you have afrcan food?",
+        "Looking for a moderatley priced place",
+        "Anywhere in the noth part of town is fine",
+        "Could you find an expensve restaurant"
     ]
     for test in tests:
         print(f"Input: {test}")
