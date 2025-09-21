@@ -281,7 +281,8 @@ if __name__ == "__main__":
         "Do you have afrcan food?",
         "Looking for a moderatley priced place",
         "Anywhere in the noth part of town is fine",
-        "Could you find an expensve restaurant"
+        "Could you find an expensve restaurant",
+        "Can you find an expensive restaurant in the east part of town that serves italian food",
     ]
     for test in tests:
         print(f"Input: {test}")

@@ -1,0 +1,21 @@
+{
+  "model_type": "logistic_regression",
+  "dataset": "datasets/dialog_acts_deduplicated.dat",
+  "classes": [
+    "ack",
+    "affirm",
+    "bye",
+    "confirm",
+    "deny",
+    "hello",
+    "inform",
+    "negate",
+    "null",
+    "repeat",
+    "reqalts",
+    "request",
+    "restart",
+    "thankyou"
+  ],
+  "saved_at": "2025-09-21T11:58:43.820778Z"
+}
